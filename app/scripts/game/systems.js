@@ -1,3 +1,5 @@
+/* global $:true */
+
 'use strict';
 
 angular
@@ -33,19 +35,34 @@ angular
   	});
 
   	ngEcs.$s('size', {
-  		$require: ['dom','size'],
+  		$require: ['dom','bbox'],
   		$addEntity: function(e) {
   			var ee = $(e.dom.element);
-  			e.size.width = ee.outerWidth();
-  			e.size.height = ee.outerHeight();
+  			e.bbox.width = ee.outerWidth();
+  			e.bbox.height = ee.outerHeight();
+
+        e.bbox.top = 0;
+        e.bbox.left = 0;
+        e.bbox.right = e.bbox.width;
+        e.bbox.bottom = e.bbox.height;
   		}
   	});
 
-  	ngEcs.$s('impulse', {
-  		$require: ['impulse','position'],
+    ngEcs.$s('bbox', {
+      $require: ['position','bbox'],
+      $updateEach: function(e) {
+  			e.bbox.top = e.position.y;
+        e.bbox.left = e.position.x;
+        e.bbox.right = e.position.x+e.bbox.width;
+        e.bbox.bottom = e.position.y+e.bbox.height;
+  		}
+    });
+
+  	ngEcs.$s('velocity', {
+  		$require: ['velocity','position'],
   		$updateEach: function(e, dt) {
-  			e.position.x += e.impulse.x*dt;
-        e.position.y += e.impulse.y*dt;
+  			e.position.x += e.velocity.x*dt;
+        e.position.y += e.velocity.y*dt;
   		}
   	});
 
@@ -53,14 +70,12 @@ angular
   		$require: ['position','dom'],
   		$addEntity: function(e) {
 
-  			var c = $('.jumbotron');
+  			var c = $('#canvas');
 
   			var width = c.width();
   			var height = c.height();
   			c.width(width);
   			c.height(height);
-
-  			//console.log(c.height());
 
   			var ee = $(e.dom.element);
   			var p = ee.position();
@@ -82,92 +97,111 @@ angular
   		},
   		$render: function() {  // todo: render each?
   			this.$family.forEach(function(e) {
-  	          $(e.dom.element).css('Transform', 'translate3d('
-                  + ~~(e.position.x) + 'px, '
-                  + ~~(e.position.y) + 'px, 0)');
+  	       $(e.dom.element).css('Transform', 'translate3d(' + ~~(e.position.x) + 'px, ' + ~~(e.position.y) + 'px, 0)');
   			});
   		}
   	});
 
   	ngEcs.$s('collision', {
   		score: 0,
+      hiscore: 0,
       screen: null,
-      width: null,
-      height: null,
+      balls: null,
+      players: null,
+      miss: false,
+      hit: false,
       $added: function() {
-        this.balls = ngEcs.families['impulse::position'];
+        this.balls = ngEcs.families['position::velocity'];
         this.players = ngEcs.families['control::position'];
       },
   		$started: function() {
-  			this.screen = $('#canvas');
-  			this.width = this.screen.outerWidth();
-  			this.height = this.screen.outerHeight();
+        this.screen = ngEcs.entities['canvas'];
   		},
   		$update: function() {
 
   			var miss = false;
+        var hit = false;
 
   			var ball = this.balls[0];
   			var player = this.players[0];
+        var screenBox = this.screen.bbox;
 
-        // paddle bounds
-        var leftWall = 10;
-        var rightWall = this.width - 10;
-
-  			var paddleLeft = player.position.x;
-  			var paddleRight = player.position.x + player.size.width;
-        var paddleTop = player.position.y;
-
-        //console.log(paddleLeft, paddleRight, this.width);
+        // area bounds
+        var leftWall = screenBox.left;
+        var rightWall = screenBox.right;
 
   			// paddle LR bounds
-  			if (paddleRight > rightWall ) {
-  				player.position.x = rightWall - player.size.width;
-  			} else if (paddleLeft < 10) {
-  				player.position.x = 10;
+  			if (player.bbox.right > rightWall ) {
+  				player.position.x = rightWall - player.bbox.width;
+  			} else if (player.bbox.left < leftWall) {
+  				player.position.x = leftWall;
   			}
 
-        var ballLeft = ball.position.x;
-        var ballRight = ball.position.x + ball.size.width;
-        var ballTop = ball.position.y;
-        var ballBottom = ball.position.y+ball.size.height;
 
-        var overlapY = ballBottom - paddleTop;
+        // ball - paddle
+        var overlapY = ball.bbox.overlapY(player.bbox);
   			if (overlapY > 0) {
-  				if (ballRight > paddleLeft && ballLeft < paddleRight) {
+          var overlapX = ball.bbox.overlapX(player.bbox);
+  				if (overlapX > 0) {
 
-  					ball.impulse.y = -1.1*Math.abs(ball.impulse.y);
-  					ball.impulse.x = 1.2*ball.impulse.x;
+            ball.velocity.y = -Math.abs(ball.velocity.y);
 
-  					ball.position.y -= overlapY;
+            var f = overlapX/ball.bbox.width;
+            if (f < 1) {
+              if (ball.bbox.left < player.bbox.left) {
+                ball.velocity.x = -Math.abs(ball.velocity.x);
+              } else {
+                ball.velocity.x = Math.abs(ball.velocity.x);
+              }
+            }
+
+            if (ball.velocity.mag() < 1200) {
+              ball.velocity.scale(1.1);
+            }
+
+  					ball.position.y -= overlapY+10;
   					this.score++;
+            this.hiscore = Math.max(this.score, this.hiscore);
+            hit = true;
   				}
   			}
 
-  			if (ballTop < 10) {
-  				ball.impulse.y = Math.abs(ball.impulse.y);
-  			} else if (ballBottom > this.height) {
-  				ball.impulse.y = -Math.abs(ball.impulse.y);
+        // ball - top/bottom
+  			if (ball.bbox.top < screenBox.top) {
+  				ball.velocity.y = Math.abs(ball.velocity.y);
+          ball.position.y = screenBox.top;
+  			} else if (ball.bbox.bottom > screenBox.bottom) {
+  				ball.velocity.y = -Math.abs(ball.velocity.y);
+          ball.position.y = screenBox.bottom-ball.bbox.height;
   				miss = true;
   			}
 
-  			if (ballRight > rightWall) {
-  				ball.impulse.x = -Math.abs(ball.impulse.x);
-  			} else if (ballLeft < 10) {
-  				ball.impulse.x = Math.abs(ball.impulse.x);
+        // ball - left/right
+  			if (ball.bbox.right > rightWall) {
+  				ball.velocity.x = -Math.abs(ball.velocity.x);
+          ball.position.x = screenBox.right-ball.bbox.width;
+  			} else if (ball.bbox.left < leftWall) {
+  				ball.velocity.x = Math.abs(ball.velocity.x);
+          ball.position.x = screenBox.left;
   			}
 
-  			this.screen.css('background-color', miss ? '#FF5858' : '#eee');
   			if (miss) {
   				this.misses++;
   				this.score = 0;
-  				miss = false;
-  				var r = Math.sqrt(ball.impulse.x*ball.impulse.x+ball.impulse.y*ball.impulse.y);
-  				ball.impulse.x = 500*ball.impulse.x/r;
-  				ball.impulse.y = 500*ball.impulse.y/r;
+          ball.velocity.norm().scale(500);
   			}
 
-  		}
+        this.miss = miss ?  true : this.miss;
+        this.hit = hit ? true : this.hit;
+
+  		},
+      $render: function() {
+        this.screen.dom.element.css('background-color', this.miss ? '#FF5858' : '#eee');  // render
+        this.players[0].dom.element.css('background-color', this.hit ? '#FF5858' : '#5CB85C');
+
+        this.miss = false;
+        this.hit = false;
+      }
   	});
 
   });
