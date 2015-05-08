@@ -15,7 +15,7 @@ angular.module('angularEcsPongApp')
       } else if (main.game.systems.collision.hiscore > 0) {
         return 'High Score: '+main.game.systems.collision.hiscore;
       } else {
-        return 'Welcome';
+        return 'Build using angular-ecs and';
       }
     };
 
@@ -29,11 +29,16 @@ angular.module('angularEcsPongApp')
       }
     };
 
-
+    ngEcs.$e('canvas', {  // canvas
+      dom: {
+        selector: '#canvas'
+      },
+      bbox: {}
+    });
 
     ngEcs.$e({  // paddle
       dom: {
-        element: $('#paddle')
+        selector: '#paddle'
       },
       bbox: {},
       position: {
@@ -46,7 +51,7 @@ angular.module('angularEcsPongApp')
     var angle = Math.PI * Math.random(), power = 500;
     ngEcs.$e({  // ball
         dom: {
-          element: $('#ball')
+          selector: '#ball',
         },
         bbox: {},
         velocity: {
@@ -58,10 +63,10 @@ angular.module('angularEcsPongApp')
         }
     });
 
-    /* var angle = Math.PI * Math.random(), power = 500;
+    var angle = Math.PI * Math.random(), power = 500;
     ngEcs.$e({  // ball
         dom: {
-          element: $('#ball2')
+          selector: '#ball2'
         },
         bbox: {},
         velocity: {
@@ -71,14 +76,9 @@ angular.module('angularEcsPongApp')
           x: 0,
           y: 0
         }
-    }); */
-
-    ngEcs.$e('canvas', {  // canvas
-        dom: {
-          element: $('#canvas')
-        },
-        bbox: {}
     });
+
+
 
 
 

@@ -29,11 +29,13 @@ angular
     };
 
   	function Dom() {
-  		this.element = null;
+      this.selector = null;
+  		this.$element = null;
   	}
 
-    Dom.prototype.select = function(selection) {
-      this.element = $(selection);
+    Dom.prototype.select = function(s) {
+      this.selector = s;
+      this.$element = angular.element(s);
     };
 
     function BBox() {

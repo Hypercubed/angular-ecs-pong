@@ -44,6 +44,10 @@ body {
   padding: 14px 24px;
 }
 
+.lead {
+  text-align: center;
+}
+
 #canvas {
   width: auto;
   height: auto;
@@ -74,8 +78,9 @@ body {
   /* position: absolute; */
   left: auto;
   right: auto;
-  width: 100px;
-  height: 80px;
+  width: 50px;
+  height: 40px;
+  margin: 0;
 }
 
 
