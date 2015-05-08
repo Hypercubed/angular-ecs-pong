@@ -15,7 +15,7 @@ angular.module('angularEcsPongApp')
       } else if (main.game.systems.collision.hiscore > 0) {
         return 'High Score: '+main.game.systems.collision.hiscore;
       } else {
-        return 'Build using angular-ecs and';
+        return 'Built using angular-ecs and';
       }
     };
 
