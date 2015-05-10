@@ -8,14 +8,21 @@ angular.module('angularEcsPongApp')
     var main = this;
 
     main.game = ngEcs;
+    ngEcs.$fps = 50;
 
     main.message = function() {
       if (main.game.$playing) {
         return main.game.systems.collision.score;
-      } else if (main.game.systems.collision.hiscore > 0) {
+      } else {
+        return 'angular-ecs-pong';
+      }
+    };
+
+    main.hiscore = function() {
+      if (main.game.$playing) {
         return 'High Score: '+main.game.systems.collision.hiscore;
       } else {
-        return 'Built using angular-ecs and';
+        return 'Built using angular-ecs<br>and';
       }
     };
 
@@ -63,7 +70,7 @@ angular.module('angularEcsPongApp')
         }
     });
 
-    var angle = Math.PI * Math.random(), power = 500;
+    angle = Math.PI * Math.random(); power = 500;
     ngEcs.$e({  // ball
         dom: {
           selector: '#ball2'

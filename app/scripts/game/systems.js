@@ -43,16 +43,23 @@ angular
 
   	ngEcs.$s('size', {
   		$require: ['dom','bbox'],
-  		$addEntity: function(e) {
-  			var ee = e.dom.$element;
-  			e.bbox.width = ee.outerWidth();
-  			e.bbox.height = ee.outerHeight();
+      $started: function() {
+        // get sizes (size may change)
+        this.$family.forEach(function(e) {
+          var ee = e.dom.$element;
+    			e.bbox.width = ee.width();
+    			e.bbox.height = ee.height();
 
-        e.bbox.top = 0;
-        e.bbox.left = 0;
-        e.bbox.right = e.bbox.width;
-        e.bbox.bottom = e.bbox.height;
-  		}
+          e.bbox.top = 0;
+          e.bbox.left = 0;
+          e.bbox.right = e.bbox.width;
+          e.bbox.bottom = e.bbox.height;
+
+          ee.width(e.bbox.width);
+          ee.height(e.bbox.height);
+          ee.css('padding', 0);
+        });
+      }
   	});
 
     ngEcs.$s('bbox', {
@@ -75,14 +82,17 @@ angular
 
   	ngEcs.$s('updatePosition', {
   		$require: ['position','dom'],
-  		$addEntity: function(e) {
-  			var ee = e.dom.$element;
-  			var p = ee.position();
-
-  			e.position.x = p.left;
-  			e.position.y = p.top;
-  		},
       $started: function() {
+        // get positions
+        this.$family.forEach(function(e) {
+          var ee = e.dom.$element;
+    			var p = ee.position();
+
+    			e.position.x = p.left;
+    			e.position.y = p.top;
+        });
+
+        // remove from flow
         this.$family.forEach(function(e) {
           var ee = e.dom.$element;
           var w = ee.width();
@@ -92,6 +102,7 @@ angular
           ee.css('left', 0);
           ee.css('right', 'auto');
           ee.css('bottom', 'auto');
+          ee.css('padding', 0);
           ee.width(w);
           ee.height(h);
           ee.css('position', 'absolute');
@@ -113,11 +124,11 @@ angular
       miss: false,
       hit: false,
       $added: function() {
-        this.balls = ngEcs.families['position::velocity'];
-        this.players = ngEcs.families['control::position'];
+        this.balls = ngEcs.$f(['position','velocity']);
+        this.players = ngEcs.$f(['control','position']);
       },
   		$started: function() {
-        this.screen = ngEcs.entities['canvas'];
+        this.screen = ngEcs.entities.canvas;
   		},
   		$update: function() {
 
@@ -216,7 +227,7 @@ angular
 
   		},
       $render: function() {
-        this.screen.dom.$element.css('background-color', this.miss ? '#FF5858' : '#eee');
+        this.screen.dom.$element.css('border-bottom-color', this.miss ? '#FF5858' : '#eee');
         this.players[0].dom.$element.css('background-color', this.hit ? '#FF5858' : '#5CB85C');
 
         this.miss = false;

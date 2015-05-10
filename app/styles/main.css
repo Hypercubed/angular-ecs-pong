@@ -34,11 +34,6 @@ body {
   margin: 30px 0;
 }
 
-/* Main marketing message and sign up button */
-.jumbotron {
-  border-bottom: 1px solid #e5e5e5;
-}
-
 .jumbotron .btn {
   font-size: 21px;
   padding: 14px 24px;
@@ -60,6 +55,8 @@ body {
   padding-right: 0px;
   padding-left: 0px;
   padding: 0;
+  border-bottom: 3px solid #eee;
+  text-align: center;
 }
 
 #canvas h1 {
@@ -72,15 +69,17 @@ body {
   width: 20%;
   bottom: 20px;
   left: 40%;
+  padding: 0;
 }
 
 .ball {
   /* position: absolute; */
   left: auto;
   right: auto;
-  width: 50px;
-  height: 40px;
+  width: 5%;
+  height: auto;
   margin: 0;
+  padding: 0;
 }
 
 
