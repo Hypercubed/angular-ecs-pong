@@ -6,7 +6,7 @@
     <img id="ball2" class="ball" src="images/angular.png">
   </p>
 
-  <button class="btn btn-lg btn-success" ng-click="main.click()" id="paddle">
+  <button class="btn btn-lg btn-success" ng-click="main.click($event)" id="paddle">
     {{main.game.$playing ? 'Stop' : 'Start'}}
   </button>
 

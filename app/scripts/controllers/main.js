@@ -26,7 +26,8 @@ angular.module('angularEcsPongApp')
       }
     };
 
-    main.click = function() {
+    main.click = function(e) {
+      e.target.blur();
       if (ngEcs.$playing) {
         console.log('stop');
         ngEcs.$stop();

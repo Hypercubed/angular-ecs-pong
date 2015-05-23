@@ -6,33 +6,33 @@ angular
   .module('angularEcsPongApp')
   .run(function (ngEcs) {
 
-  	ngEcs.$s('controls', {
-  		keys: {},
-  		$require: ['control','position'],
-  		changeKey: function(e, v) {
-  			this.keys[e.keyCode] = v;
-  		},
-  		$updateEach: function(e) {
-  			if (this.keys[65] || this.keys[37]) {
-  				e.position.x -= e.control.speed;
-  			} else if (this.keys[68] || this.keys[39]) {
-  				e.position.x += e.control.speed;
-  			}
-  		},
-  		$added: function() {
-  			var self = this;
+    ngEcs.$s('controls', {
+      keys: {},
+      $require: ['control','position'],
+      changeKey: function(e, v) {
+        this.keys[e.keyCode] = v;
+      },
+      $updateEach: function(e) {
+        if (this.keys[65] || this.keys[37]) {
+          e.position.x -= e.control.speed;
+        } else if (this.keys[68] || this.keys[39]) {
+          e.position.x += e.control.speed;
+        }
+      },
+      $added: function() {
+        var self = this;
         var doc = $(document);
 
         doc.keydown(function(e) {
-  				self.changeKey(e||window.event, true);
-  			});
+          self.changeKey(e||window.event, true);
+        });
 
         doc.keyup(function(e) {
-  				self.changeKey(e||window.event, false);
-  			});
+          self.changeKey(e||window.event, false);
+        });
 
-  		}
-  	});
+      }
+    });
 
     ngEcs.$s('dom', {
       $require: ['dom'],
@@ -41,14 +41,14 @@ angular
       }
     });
 
-  	ngEcs.$s('size', {
-  		$require: ['dom','bbox'],
+    ngEcs.$s('size', {
+      $require: ['dom','bbox'],
       $started: function() {
         // get sizes (size may change)
         this.$family.forEach(function(e) {
           var ee = e.dom.$element;
-    			e.bbox.width = ee.width();
-    			e.bbox.height = ee.height();
+          e.bbox.width = ee.width();
+          e.bbox.height = ee.height();
 
           e.bbox.top = 0;
           e.bbox.left = 0;
@@ -60,36 +60,36 @@ angular
           ee.css('padding', 0);
         });
       }
-  	});
+    });
 
     ngEcs.$s('bbox', {
       $require: ['position','bbox'],
       $updateEach: function(e) {
-  			e.bbox.top = e.position.y;
+        e.bbox.top = e.position.y;
         e.bbox.left = e.position.x;
         e.bbox.right = e.position.x+e.bbox.width;
         e.bbox.bottom = e.position.y+e.bbox.height;
-  		}
+      }
     });
 
-  	ngEcs.$s('velocity', {
-  		$require: ['velocity','position'],
-  		$updateEach: function(e, dt) {
-  			e.position.x += e.velocity.x*dt;
+    ngEcs.$s('velocity', {
+      $require: ['velocity','position'],
+      $updateEach: function(e, dt) {
+        e.position.x += e.velocity.x*dt;
         e.position.y += e.velocity.y*dt;
-  		}
-  	});
+      }
+    });
 
-  	ngEcs.$s('updatePosition', {
-  		$require: ['position','dom'],
+    ngEcs.$s('updatePosition', {
+      $require: ['position','dom'],
       $started: function() {
         // get positions
         this.$family.forEach(function(e) {
           var ee = e.dom.$element;
-    			var p = ee.position();
+          var p = ee.position();
 
-    			e.position.x = p.left;
-    			e.position.y = p.top;
+          e.position.x = p.left;
+          e.position.y = p.top;
         });
 
         // remove from flow
@@ -108,15 +108,15 @@ angular
           ee.css('position', 'absolute');
         });
       },
-  		$render: function() {  // todo: render each?
-  			this.$family.forEach(function(e) {
+      $render: function() {  // todo: render each?
+        this.$family.forEach(function(e) {
           e.dom.$element.css('Transform', 'translate3d(' + ~~(e.position.x) + 'px, ' + ~~(e.position.y) + 'px, 0)');
-  			});
-  		}
-  	});
+        });
+      }
+    });
 
-  	ngEcs.$s('collision', {
-  		score: 0,
+    ngEcs.$s('collision', {
+      score: 0,
       hiscore: 0,
       screen: null,
       balls: null,
@@ -127,10 +127,10 @@ angular
         this.balls = ngEcs.$f(['position','velocity']);
         this.players = ngEcs.$f(['control','position']);
       },
-  		$started: function() {
+      $started: function() {
         this.screen = ngEcs.entities.canvas;
-  		},
-  		$update: function() {
+      },
+      $update: function() {
 
         var screenBox = this.screen.bbox;
 
@@ -166,9 +166,9 @@ angular
 
             // ball - paddle
             var overlapY = ball.bbox.overlapY(player.bbox);
-      			if (overlapY > 0) {
+            if (overlapY > 0) {
               var overlapX = ball.bbox.overlapX(player.bbox);
-      				if (overlapX > 0) {
+              if (overlapX > 0) {
 
                 ball.velocity.y = -Math.abs(ball.velocity.y);
 
@@ -185,12 +185,12 @@ angular
                   ball.velocity.scale(1.1);
                 }
 
-      					ball.position.y -= overlapY+10;
-      					this.score++;
+                ball.position.y -= overlapY+10;
+                this.score++;
                 this.hiscore = Math.max(this.score, this.hiscore);
                 hit = true;
-      				}
-      			}
+              }
+            }
 
             this.hit = hit ? true : this.hit;
 
@@ -225,7 +225,7 @@ angular
 
         }
 
-  		},
+      },
       $render: function() {
         this.screen.dom.$element.css('border-bottom-color', this.miss ? '#FF5858' : '#eee');
         this.players[0].dom.$element.css('background-color', this.hit ? '#FF5858' : '#5CB85C');
@@ -233,6 +233,6 @@ angular
         this.miss = false;
         this.hit = false;
       }
-  	});
+    });
 
   });
